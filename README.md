@@ -2,6 +2,16 @@
 
 2. 파이어베이스 > 보안 > Authentication 클릭 > 로그인 방법 클릭 > google 클릭 > 사용설정 활성화 > 프로젝트지원 이메일 작성 > 저장
 
-3. 데이터베이스 및 스토리지 > Firestore 클릭 > 데이터베이스 만들기 클릭 > Standard 버전 > 위치 [asia-northeast3 (seoul) ] > 프로덕션 모드 > 만들기
+3. 데이터베이스 및 스토리지 > Firestore 클릭 > 데이터베이스 만들기 클릭 > Standard 버전 > 위치 [asia-northeast3 (seoul) ] > 프로덕션 모드 > 만들기 > 상단 규칙 클릭 > 아래 코드 복사 후 붙여넣기 > 개발 및 테스트 클릭
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /artifacts/{appId}/users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
 
 
