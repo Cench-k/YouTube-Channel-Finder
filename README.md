@@ -14,4 +14,4 @@ service cloud.firestore {
   }
 }
 
-
+4. 유튜브 api 키 발급 - https://console.cloud.google.com/apis/library/browse?q=youtube%20data%20api%20v3
