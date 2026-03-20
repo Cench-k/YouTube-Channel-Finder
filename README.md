@@ -11,3 +11,5 @@
 
 안내 영상
 https://youtu.be/Ee97X1RFptk
+
+유튜브 채널 검색 앱 웹 - https://you-tube-channel-finder.vercel.app/
