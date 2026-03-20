@@ -6,12 +6,8 @@
 
 rules_version = '2';
 
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /artifacts/{appId}/users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
 
 4. 유튜브 api 키 발급 - https://console.cloud.google.com/apis/library/browse?q=youtube%20data%20api%20v3
+
+안내 영상
+https://youtu.be/FXDz0Sfxqws?si=mRoO21ld1UM2fcjc
