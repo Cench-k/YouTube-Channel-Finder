@@ -5,6 +5,13 @@
 3. 데이터베이스 및 스토리지 > Firestore 클릭 > 데이터베이스 만들기 클릭 > Standard 버전 > 위치 [asia-northeast3 (seoul) ] > 프로덕션 모드 > 만들기 > 상단 규칙 클릭 > 아래 코드 복사 후 붙여넣기 > 개발 및 테스트 클릭
 
 rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /artifacts/{appId}/users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
 
 
 4. 유튜브 api 키 발급 - https://console.cloud.google.com/apis/library/browse?q=youtube%20data%20api%20v3
