@@ -46,7 +46,6 @@ const parseISO8601Duration = (duration) => {
     return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
 };
 
-// 숏폼 여부 판단 유틸리티 (60초 이하인 경우)
 const isShorts = (duration) => {
     if (!duration) return false;
     const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -71,10 +70,10 @@ const CategoryModal = ({ isOpen, onClose, categories, onAdd, onDelete }) => {
         </div>
         <div className="p-6">
           <div className="flex gap-2 mb-6">
-            <input type="text" value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="새 카테고리 명" className="flex-1 bg-[#2c2c2c] border border-gray-700 rounded-xl px-4 py-2 text-white outline-none focus:ring-1 focus:ring-red-600 transition" onKeyDown={(e) => e.key === 'Enter' && (onAdd(newCat), setNewCat(''))} />
-            <button onClick={() => { if(newCat.trim()){ onAdd(newCat); setNewCat(''); } }} className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl">추가</button>
+            <input type="text" value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="새 카테고리 명" className="flex-1 bg-[#2c2c2c] border border-gray-700 rounded-xl px-4 py-2 text-white outline-none focus:ring-1 focus:ring-red-600 transition font-bold" onKeyDown={(e) => e.key === 'Enter' && (onAdd(newCat), setNewCat(''))} />
+            <button onClick={() => { if(newCat.trim()){ onAdd(newCat); setNewCat(''); } }} className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-bold">추가</button>
           </div>
-          <div className="max-h-64 overflow-y-auto space-y-2 pr-2 text-white no-scrollbar">
+          <div className="max-h-64 overflow-y-auto space-y-2 pr-2 text-white no-scrollbar font-bold">
             {categories.map(cat => (
               <div key={cat.id} className="flex justify-between items-center p-4 bg-[#2c2c2c] rounded-xl group text-left">
                 <span className="font-bold">{cat.name}</span>
@@ -158,10 +157,10 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
         {!loading && stats?.banner && (
             <div className="w-full h-32 md:h-40 overflow-hidden relative shrink-0">
                 <img src={stats.banner} className="w-full h-full object-cover opacity-60" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] to-transparent font-bold"></div>
             </div>
         )}
-        <div className="flex justify-between items-center p-6 border-b border-gray-800 bg-[#131313] shrink-0 relative z-10 font-bold">
+        <div className="flex justify-between items-center p-6 border-b border-gray-800 bg-[#131313] shrink-0 relative z-10 font-bold font-sans">
           <div className="flex items-center gap-4 min-w-0 text-left font-bold">
             <div className={`w-16 h-16 rounded-full overflow-hidden border-2 border-red-600/50 bg-gray-800 shrink-0 ${stats?.banner ? '-mt-12 shadow-xl' : ''}`}>
               <img src={channel?.thumbnail || channel?.thumb} alt="" className="w-full h-full object-cover font-bold" />
@@ -179,14 +178,14 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
         <div className="p-8 overflow-y-auto space-y-10 flex-1 text-left no-scrollbar font-bold">
           {loading ? (
             <div className="h-64 flex flex-col items-center justify-center text-gray-500 font-bold font-sans">
-              <Loader2 className="animate-spin mb-4" size={48} /><p className="uppercase tracking-widest text-xs">데이터 분석 중...</p>
+              <Loader2 className="animate-spin mb-4" size={48} /><p className="uppercase tracking-widest text-xs font-sans">데이터 분석 중...</p>
             </div>
           ) : stats ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-bold">
                 {stats.keywords.length > 0 && (
                   <section className="space-y-3 font-bold">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans"><Tag size={14} /> 채널 키워드</h3>
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><Tag size={14} /> 채널 키워드</h3>
                     <div className="flex flex-wrap gap-2">
                       {stats.keywords.slice(0, 10).map((kw, i) => (
                         <span key={i} className="bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-[10px] text-gray-400 font-sans font-medium">#{kw.replace(/"/g, '')}</span>
@@ -196,7 +195,7 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
                 )}
                 {stats.topics.length > 0 && (
                   <section className="space-y-3 font-bold">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans"><Globe size={14} /> 주요 주제</h3>
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><Globe size={14} /> 주요 주제</h3>
                     <div className="flex flex-wrap gap-2">
                       {stats.topics.map((tp, i) => (
                         <span key={i} className="bg-red-600/10 border border-red-600/20 px-2.5 py-1 rounded-lg text-[10px] text-red-400 font-sans capitalize font-medium">{tp}</span>
@@ -206,9 +205,9 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
                 )}
               </div>
 
-              <section className="space-y-4 font-bold">
+              <section className="space-y-4 font-bold font-sans">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><BarChart3 size={16} className="text-red-500" /> 활동 요약</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-bold">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-bold font-sans">
                     {[
                         { val: stats.totalUploads, label: "30일 업로드", color: "text-red-600" },
                         { val: stats.totalUploads > 0 ? `${(30/stats.totalUploads).toFixed(1)}일` : "-", label: "빈도", color: "text-red-500" },
@@ -223,15 +222,15 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
                 </div>
               </section>
               
-              <section className="space-y-4 font-bold">
+              <section className="space-y-4 font-bold font-sans">
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><TrendingUp size={16} className="text-green-500" /> 조회수 분석</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans font-bold">
-                  <div className="bg-orange-600/5 border border-orange-600/20 p-5 rounded-2xl text-center">
-                    <p className="text-3xl font-bold text-orange-500 font-sans">{formatNumber(stats.avgRecentViews)}</p>
+                  <div className="bg-orange-600/5 border border-orange-600/20 p-5 rounded-2xl text-center font-bold">
+                    <p className="text-3xl font-bold text-orange-500 font-sans font-bold">{formatNumber(stats.avgRecentViews)}</p>
                     <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">최근 30일 평균</p>
                   </div>
                   <div className="bg-blue-600/5 border border-blue-600/20 p-5 rounded-2xl text-center font-bold">
-                    <p className="text-3xl font-bold text-blue-500 font-sans">{formatNumber(stats.avgAllTimeViews)}</p>
+                    <p className="text-3xl font-bold text-blue-500 font-sans font-bold">{formatNumber(stats.avgAllTimeViews)}</p>
                     <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">역대 일평균</p>
                   </div>
                 </div>
@@ -270,7 +269,7 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
                                 <p className="text-[13px] text-white font-bold whitespace-normal line-clamp-2 leading-snug group-hover:text-red-400 transition">{vid.snippet.title}</p>
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] text-gray-500 font-sans font-medium">
                                     <span className="bg-red-600/10 text-red-500 px-1.5 rounded-sm">{VIDEO_CATEGORIES[vid.snippet.categoryId] || "기타"}</span>
-                                    <span className="flex items-center gap-1"><TrendingUp size={12}/> {formatNumber(vV)}</span>
+                                    <span className="flex items-center gap-1 font-bold font-sans font-bold"><TrendingUp size={12}/> {formatNumber(vV)}</span>
                                     <span className="text-yellow-500 font-bold ml-auto">효율 {(vV/sC).toFixed(1)}배</span>
                                 </div>
                             </div>
@@ -283,14 +282,14 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
           ) : null}
         </div>
         <div className="p-5 bg-[#131313] border-t border-gray-800 shrink-0 font-bold font-sans">
-          <button onClick={onClose} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl transition active:scale-95 shadow-lg">분석창 닫기</button>
+          <button onClick={onClose} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl transition active:scale-95 shadow-lg font-bold font-sans font-bold">분석창 닫기</button>
         </div>
       </div>
     </div>
   );
 };
 
-const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, onSave, onAnalyze, mode, onUpdateCategory }) => {
+const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, onSave, onAnalyze, mode, onUpdateCategory, db, user }) => {
   const [selectedCategory, setSelectedCategory] = useState(result.category || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [tempMemo, setTempMemo] = useState(result.memo || '');
@@ -309,21 +308,21 @@ const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, 
           <img src={result.thumbnail || result.thumb} alt="" className="w-full h-full object-cover font-bold font-sans" />
         </div>
         <div className="flex-1 min-w-0 font-bold font-sans">
-          <h3 className="text-[13px] font-bold whitespace-normal line-clamp-2 leading-snug mb-1.5 h-10 font-sans">{result.title || result.name}</h3>
+          <h3 className="text-[13px] font-bold whitespace-normal line-clamp-2 leading-snug mb-1.5 h-10 font-bold font-sans">{result.title || result.name}</h3>
           <div className="flex flex-wrap gap-1.5 mt-1 font-bold font-sans">
-             <span className="bg-gray-800 text-gray-400 text-[9px] px-2 py-0.5 rounded-full uppercase font-sans">{(isVideo || result.videoId) ? 'Video' : 'Channel'}</span>
-             {result.efficiency > 0 && <span className="bg-orange-600/20 text-orange-400 text-[9px] px-2 py-0.5 rounded-full font-bold font-sans">🔥 효율 {result.efficiency.toFixed(1)}배</span>}
+             <span className="bg-gray-800 text-gray-400 text-[9px] px-2 py-0.5 rounded-full uppercase font-sans font-bold">{(isVideo || result.videoId) ? 'Video' : 'Channel'}</span>
+             {result.efficiency > 0 && <span className="bg-orange-600/20 text-orange-400 text-[9px] px-2 py-0.5 rounded-full font-bold font-sans font-bold">🔥 효율 {result.efficiency.toFixed(1)}배</span>}
           </div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3 font-sans font-bold">
         <div className="bg-black/20 p-2 rounded-xl border border-white/5 text-center font-bold">
           <p className="text-[9px] text-gray-500 uppercase text-left font-bold font-sans">Views</p>
-          <p className="text-xs text-blue-400 font-bold font-sans">{formatNumber(result.views || 0)}</p>
+          <p className="text-xs text-blue-400 font-bold font-sans font-bold">{formatNumber(result.views || 0)}</p>
         </div>
         <div className="bg-black/20 p-2 rounded-xl border border-white/5 text-center font-bold">
-          <p className="text-[9px] text-gray-500 uppercase text-left font-bold font-sans">Subs</p>
-          <p className="text-xs text-green-400 font-bold font-sans">{formatNumber(result.subs || 0)}</p>
+          <p className="text-[9px] text-gray-500 uppercase text-left font-bold font-sans font-bold">Subs</p>
+          <p className="text-xs text-green-400 font-bold font-sans font-bold">{formatNumber(result.subs || 0)}</p>
         </div>
       </div>
       {isSavedView ? (
@@ -332,21 +331,21 @@ const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, 
             <select value={selectedCategory} onChange={(e) => onUpdateCategory(result.id, e.target.value)} className="bg-yellow-600/10 text-yellow-500 text-[10px] px-2 py-0.5 rounded-lg border border-yellow-600/20 outline-none font-bold cursor-pointer font-sans">
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
-            {!isEditingMemo ? <button onClick={() => setIsEditingMemo(true)} className="text-gray-500 hover:text-white transition font-bold"><Edit3 size={14} /></button> : <button onClick={() => { onUpdateMemo(result.id, tempMemo); setIsEditingMemo(false); }} className="text-green-500 hover:text-green-400 transition font-bold font-sans"><Check size={16} /></button>}
+            {!isEditingMemo ? <button onClick={() => setIsEditingMemo(true)} className="text-gray-500 hover:text-white transition font-bold font-sans"><Edit3 size={14} /></button> : <button onClick={() => { onUpdateMemo(result.id, tempMemo); setIsEditingMemo(false); }} className="text-green-500 hover:text-green-400 transition font-bold font-sans"><Check size={16} /></button>}
           </div>
-          {isEditingMemo ? <textarea autoFocus value={tempMemo} onChange={(e) => setTempMemo(e.target.value)} className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs text-gray-300 focus:border-red-600 outline-none resize-none h-20 transition font-bold font-sans" /> : <div className="bg-black/20 rounded-xl p-3 min-h-[40px] border border-white/5 text-left text-[11px] text-gray-400 line-clamp-3 font-medium font-sans">{result.memo || "작성된 메모가 없습니다."}</div>}
+          {isEditingMemo ? <textarea autoFocus value={tempMemo} onChange={(e) => setTempMemo(e.target.value)} className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs text-gray-300 focus:border-red-600 outline-none resize-none h-20 transition font-bold font-sans font-bold" /> : <div className="bg-black/20 rounded-xl p-3 min-h-[40px] border border-white/5 text-left text-[11px] text-gray-400 line-clamp-3 font-medium font-sans font-bold">{result.memo || "작성된 메모가 없습니다."}</div>}
         </div>
       ) : (
-        <div className="mb-4 font-bold font-sans">
+        <div className="mb-4 font-bold font-sans font-bold">
           <p className="text-[10px] text-gray-500 mb-2 uppercase tracking-widest font-sans font-bold">저장 위치</p>
-          <select className="w-full bg-gray-800 text-gray-300 text-xs px-3 py-2 rounded-xl border border-gray-700 focus:outline-none cursor-pointer font-bold font-sans" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          <select className="w-full bg-gray-800 text-gray-300 text-xs px-3 py-2 rounded-xl border border-gray-700 focus:outline-none cursor-pointer font-bold font-sans font-bold" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             {categories.length > 0 ? categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>) : <option value="">카테고리 없음</option>}
           </select>
         </div>
       )}
-      <div className="flex gap-2 mt-auto font-bold font-sans">
-        {!isSavedView ? <button onClick={() => onSave(result, selectedCategory, (isVideo || result.videoId) ? 'video' : 'channel')} className="flex-1 bg-white text-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 font-bold shadow-md">저장하기</button> : (
-          <button onClick={() => onRemove(result.id)} className="flex-1 bg-red-600/20 text-red-500 text-xs py-2.5 rounded-xl border border-red-600/30 hover:bg-red-600 hover:text-white transition font-bold font-sans">삭제</button>
+      <div className="flex gap-2 mt-auto font-bold font-sans font-bold">
+        {!isSavedView ? <button onClick={() => onSave(result, selectedCategory, (isVideo || result.videoId) ? 'video' : 'channel')} className="flex-1 bg-white text-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 font-bold shadow-md font-sans">저장하기</button> : (
+          <button onClick={() => onRemove(result.id)} className="flex-1 bg-red-600/20 text-red-500 text-xs py-2.5 rounded-xl border border-red-600/30 hover:bg-red-600 hover:text-white transition font-bold font-sans font-bold">삭제</button>
         )}
         <button onClick={() => onAnalyze(result)} className="p-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition shrink-0 flex items-center justify-center font-bold" title="상세분석"><BarChart3 size={16} /></button>
       </div>
@@ -415,7 +414,7 @@ export default function App() {
       if (parsed.apiKey && parsed.projectId) {
         localStorage.setItem('dynamic-fb-config', JSON.stringify(parsed));
         setFbConfig(parsed);
-      } else { alert("필수 항목(apiKey, projectId)이 누락되었습니다."); }
+      } else { alert("필수 항목이 누락되었습니다."); }
     } catch (e) { alert("연결 정보 형식이 올바르지 않습니다."); }
   };
 
@@ -431,7 +430,7 @@ export default function App() {
   const handleGoogleLogin = async () => {
     if (!services) return;
     const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(services.auth, provider); } catch (err) { alert("로그인 실패"); }
+    try { await signInWithPopup(services.auth, provider); } catch (err) { alert("로그인 실패: 팝업 차단 여부와 Firebase 도메인 설정을 확인하세요."); }
   };
 
   const handleLogout = async () => {
@@ -475,11 +474,7 @@ export default function App() {
                   const views = parseInt(c.statistics.viewCount || 0);
                   const videos = parseInt(c.statistics.videoCount || 1);
                   const ageDays = Math.max((Date.now() - new Date(c.snippet.publishedAt).getTime()) / 86400000, 1);
-                  return {
-                    channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
-                    subs, views, efficiency: views / subs, uploadRate: videos / ageDays, 
-                    publishTime: c.snippet.publishedAt, type: 'channel'
-                  };
+                  return { channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url, subs, views, efficiency: views / subs, uploadRate: videos / ageDays, publishTime: c.snippet.publishedAt, type: 'channel' };
               }));
               setIsLoading(false); return;
             }
@@ -495,16 +490,15 @@ export default function App() {
                 const views = parseInt(c.statistics.viewCount || 0);
                 const videos = parseInt(c.statistics.videoCount || 1);
                 const ageDays = Math.max((Date.now() - new Date(c.snippet.publishedAt).getTime()) / 86400000, 1);
-                return {
-                    channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
-                    subs, views, efficiency: views / subs, uploadRate: videos / ageDays, 
-                    publishTime: c.snippet.publishedAt, type: 'channel'
-                };
+                return { channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url, subs, views, efficiency: views / subs, uploadRate: videos / ageDays, publishTime: c.snippet.publishedAt, type: 'channel' };
             }) || []);
           }
       } else {
         const [reg, lng] = keywordFilter.region.split('|');
-        const pubAfter = keywordFilter.period === 'custom' ? new Date(parseInt(keywordFilter.customYear), parseInt(keywordFilter.customMonth) - 1, parseInt(keywordFilter.customDay) || 1).toISOString() : new Date(Date.now() - parseInt(keywordFilter.period) * 86400000).toISOString();
+        const pubAfter = keywordFilter.period === 'custom' 
+          ? new Date(parseInt(keywordFilter.customYear), parseInt(keywordFilter.customMonth) - 1, parseInt(keywordFilter.customDay) || 1).toISOString() 
+          : new Date(Date.now() - parseInt(keywordFilter.period) * 86400000).toISOString();
+          
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${keywordFilter.maxResults}&q=${encodeURIComponent(keywordFilter.keyword)}&key=${apiKey}&order=${keywordFilter.order}&publishedAfter=${pubAfter}`;
         if (reg) url += `&regionCode=${reg}`;
         if (lng) url += `&relevanceLanguage=${lng}`;
@@ -514,14 +508,17 @@ export default function App() {
         const data = await res.json();
         const items = data.items || [];
         const vIds = items.map(i => i.id.videoId).join(',');
+        
         if (vIds) {
           const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${vIds}&key=${apiKey}`);
           const vData = await vRes.json();
           const vMap = {}; vData.items?.forEach(v => vMap[v.id] = v);
+          
           const cIds = [...new Set(items.map(i => i.snippet.channelId))].join(',');
           const cRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${cIds}&key=${apiKey}`);
           const cData = await cRes.json();
           const cMap = {}; cData.items?.forEach(c => cMap[c.id] = c);
+          
           let final = items.map(i => {
             const vF = vMap[i.id.videoId] || { statistics: {}, contentDetails: {} };
             const chF = cMap[i.snippet.channelId] || { statistics: {} };
@@ -531,6 +528,7 @@ export default function App() {
             const ageDays = Math.max((Date.now() - new Date(chF.snippet?.publishedAt || 0).getTime()) / 86400000, 1);
             return { videoId: i.id.videoId, channelId: i.snippet.channelId, title: i.snippet.title, thumbnail: i.snippet.thumbnails.medium?.url, views, subs, efficiency: views / Math.max(subs, 1), uploadRate: videos / ageDays, publishTime: i.snippet.publishedAt, type: 'video' };
           });
+          
           if (keywordFilter.minViews) final = final.filter(r => r.views >= parseInt(keywordFilter.minViews));
           if (keywordFilter.minSubs) final = final.filter(r => r.subs >= parseInt(keywordFilter.minSubs));
           setVideoResults(final);
@@ -557,16 +555,16 @@ export default function App() {
 
   const filteredSaved = useMemo(() => savedChannels.filter(ch => activeTab === '전체' || ch.category === activeTab), [savedChannels, activeTab]);
 
-  if (authLoading) return <div className="h-screen bg-[#0f0f0f] text-white flex flex-col items-center justify-center font-bold"><RefreshCw size={48} className="text-blue-600 animate-spin mb-4" /><p className="font-sans">준비 중...</p></div>;
+  if (authLoading) return <div className="h-screen bg-[#0f0f0f] text-white flex flex-col items-center justify-center font-bold font-sans"><RefreshCw size={48} className="text-blue-600 animate-spin mb-4" /><p>로딩 중...</p></div>;
 
   if (!fbConfig) {
     return (
-      <div className="h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6 text-center font-bold">
+      <div className="h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6 text-center font-bold font-sans">
         <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl">
           <Database size={56} className="text-blue-600 mx-auto animate-pulse" />
           <h1 className="text-3xl font-black italic uppercase">Project Setup</h1>
           <p className="text-gray-400 text-sm">Firebase 설정 JSON을 붙여넣으세요.</p>
-          <textarea value={configInput} onChange={(e) => setConfigInput(e.target.value)} placeholder="const firebaseConfig = { ... };" className="w-full bg-black/50 border border-gray-800 rounded-2xl p-4 text-[11px] h-40 outline-none focus:border-blue-600 font-mono" />
+          <textarea value={configInput} onChange={(e) => setConfigInput(e.target.value)} placeholder="const firebaseConfig = { ... };" className="w-full bg-black/50 border border-gray-800 rounded-2xl p-4 text-[11px] h-40 outline-none focus:border-blue-600 font-mono font-bold" />
           <button onClick={handleSaveConfig} className="w-full bg-blue-600 py-4 rounded-2xl font-bold active:scale-95 transition">연결하기</button>
         </div>
       </div>
@@ -575,13 +573,13 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6 text-center font-bold">
-        <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl font-bold font-sans">
+      <div className="h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6 text-center font-bold font-sans">
+        <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl font-bold">
           <Youtube size={64} className="text-red-600 mx-auto" />
-          <h1 className="text-3xl font-black uppercase italic">YT Finder</h1>
-          <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 text-xs font-sans font-medium">프로젝트 연결됨: {fbConfig.projectId}</div>
-          <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-5 rounded-2xl flex items-center justify-center gap-3 font-bold transition active:scale-95 shadow-lg"><LogIn size={24} className="text-blue-600" /> Google 로그인 시작</button>
-          <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="text-[10px] text-gray-500 underline uppercase tracking-widest">설정 초기화</button>
+          <h1 className="text-3xl font-black uppercase italic font-sans font-bold">YT Finder</h1>
+          <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 text-xs font-sans font-bold">연결된 프로젝트: {fbConfig.projectId}</div>
+          <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-5 rounded-2xl flex items-center justify-center gap-3 font-bold transition active:scale-95 shadow-lg"><LogIn size={24} className="text-blue-600" /> Google 로그인</button>
+          <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="text-[10px] text-gray-500 underline uppercase font-bold">설정 초기화</button>
         </div>
       </div>
     );
@@ -591,8 +589,8 @@ export default function App() {
     <div className="h-screen bg-[#0f0f0f] text-white flex flex-col md:flex-row tracking-tight font-sans overflow-hidden font-bold">
       <aside className="w-full md:w-80 h-full border-r border-gray-800 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar bg-[#0f0f0f] z-10 font-bold font-sans">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 font-bold font-sans"><Youtube className="text-red-600" size={32} /><h1 className="text-xl italic">YT Finder</h1></div>
-          <button onClick={handleLogout} className="p-2 bg-gray-800 rounded-xl hover:bg-red-600 transition"><LogOut size={16} /></button>
+          <div className="flex items-center gap-2 font-bold font-sans font-bold"><Youtube className="text-red-600" size={32} /><h1 className="text-xl italic">YT Finder</h1></div>
+          <button onClick={handleLogout} className="p-2 bg-gray-800 rounded-xl hover:bg-red-600 transition" title="로그아웃"><LogOut size={16} /></button>
         </div>
 
         <div className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 flex items-center justify-between shadow-sm">
@@ -602,55 +600,54 @@ export default function App() {
             </div>
             <div className="min-w-0 font-bold">
               <p className="text-xs truncate">{user?.displayName || "User"}</p>
-              <p className="text-[9px] text-green-500 uppercase tracking-widest font-sans font-medium">Connected</p>
+              <p className="text-[9px] text-green-500 uppercase font-bold">Sync Active</p>
             </div>
           </div>
         </div>
         
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-3 uppercase tracking-widest font-bold font-sans"><Settings size={14} /> YouTube API</h2>
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-3 uppercase tracking-widest font-bold"><Settings size={14} /> YouTube API</h2>
           {!isApiKeySaved ? (
             <div className="space-y-2">
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="API Key" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none" />
-              <button onClick={() => { setDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'settings', 'youtube'), { key: apiKey }); setIsApiKeySaved(true); }} className="w-full bg-green-600 py-2 rounded-xl text-xs font-bold active:scale-95 transition">키 저장</button>
+              <button onClick={() => { setDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'settings', 'youtube'), { key: apiKey }); setIsApiKeySaved(true); }} className="w-full bg-green-600 py-2 rounded-xl text-xs font-bold active:scale-95 transition font-bold font-sans">키 저장</button>
             </div>
           ) : (
             <div className="flex justify-between items-center text-green-500 font-bold">
-              <span className="text-xs">API 활성화됨</span>
-              <button onClick={() => setIsApiKeySaved(false)} className="text-[10px] text-gray-500 underline">변경</button>
+              <span className="text-xs font-bold font-sans">API 활성화됨</span>
+              <button onClick={() => setIsApiKeySaved(false)} className="text-[10px] text-gray-500 underline font-bold font-sans">변경</button>
             </div>
           )}
         </section>
 
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Video size={14} /> 필터 검색 (동영상)</h2>
-          <div className="space-y-4 font-bold">
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Video size={14} className="font-bold" /> 필터 검색</h2>
+          <div className="space-y-4 font-bold font-sans font-bold">
             <input value={keywordFilter.keyword} onChange={(e) => setKeywordFilter({...keywordFilter, keyword: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSearch('keyword')} placeholder="검색 키워드" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none font-bold" />
             
             <div className="space-y-1 font-bold font-sans">
-              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans font-medium"><Clock3 size={10}/> 영상 길이 구분</label>
+              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1"><Clock3 size={10}/> 영상 길이</label>
               <select value={keywordFilter.duration} onChange={(e) => setKeywordFilter({...keywordFilter, duration: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
-                <option value="any">전체 (모든 길이)</option>
-                <option value="short">숏폼/단편 (4분 미만)</option>
-                <option value="medium">일반 영상 (4분~20분)</option>
-                <option value="long">롱폼 영상 (20분 이상)</option>
+                <option value="any">전체 길이</option>
+                <option value="short">숏폼 (4분 미만)</option>
+                <option value="medium">일반 (4분~20분)</option>
+                <option value="long">롱폼 (20분 이상)</option>
               </select>
             </div>
 
-            <div className="space-y-1 font-bold font-sans">
-              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans font-medium"><Globe size={10}/> 국가/언어 선택</label>
+            <div className="space-y-1 font-bold">
+              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans"><Globe size={10}/> 국가/언어</label>
               <select value={keywordFilter.region} onChange={(e) => setKeywordFilter({...keywordFilter, region: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
                 <option value="KR|ko">🇰🇷 대한민국 (한국어)</option>
                 <option value="US|en">🇺🇸 미국 (영어)</option>
                 <option value="JP|ja">🇯🇵 일본 (일본어)</option>
-                <option value="GB|en">🇬🇧 영국 (영어)</option>
-                <option value="|">🌍 글로벌 (전체)</option>
+                <option value="|">🌍 글로벌</option>
               </select>
             </div>
 
             <div className="space-y-1 font-bold font-sans">
-              <label className="text-[10px] text-gray-500 font-bold font-medium">기간 설정</label>
-              <select value={keywordFilter.period} onChange={(e) => setKeywordFilter({...keywordFilter, period: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
+              <label className="text-[10px] text-gray-500 font-bold">검색 기간</label>
+              <select value={keywordFilter.period} onChange={(e) => setKeywordFilter({...keywordFilter, period: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold">
                 <option value="7">최근 7일</option>
                 <option value="30">최근 30일</option>
                 <option value="365">최근 1년</option>
@@ -659,7 +656,7 @@ export default function App() {
             </div>
 
             {keywordFilter.period === 'custom' && (
-              <div className="grid grid-cols-3 gap-1 font-bold">
+              <div className="grid grid-cols-3 gap-1 font-bold font-sans font-bold">
                   <select value={keywordFilter.customYear} onChange={(e)=>setKeywordFilter({...keywordFilter, customYear: e.target.value})} className="bg-black border border-gray-800 p-1 text-[10px] rounded-lg">
                       {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}년</option>)}
                   </select>
@@ -670,60 +667,60 @@ export default function App() {
               </div>
             )}
 
-            <button onClick={() => setIsAdvancedOpen(!isAdvancedOpen)} className="text-[11px] text-gray-500 flex items-center gap-1 hover:text-white transition py-1 font-bold font-sans">
-              {isAdvancedOpen ? <ChevronUp size={14}/> : <ChevronDown size={14}/>} {isAdvancedOpen ? "옵션 닫기" : "고급 수치 필터"}
+            <button onClick={() => setIsAdvancedOpen(!isAdvancedOpen)} className="text-[11px] text-gray-500 flex items-center gap-1 hover:text-white transition py-1 font-bold font-sans font-bold">
+              {isAdvancedOpen ? <ChevronUp size={14}/> : <ChevronDown size={14}/>} {isAdvancedOpen ? "옵션 닫기" : "고급 필터 (조회수/구독자)"}
             </button>
             
             {isAdvancedOpen && (
-              <div className="space-y-3 p-3 bg-black/30 rounded-xl border border-white/5 font-bold font-sans">
-                  <div className="grid grid-cols-2 gap-2 text-left">
-                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">최소 조회수</p><input value={keywordFilter.minViews} onChange={(e)=>setKeywordFilter({...keywordFilter, minViews: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
-                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">최소 구독자</p><input value={keywordFilter.minSubs} onChange={(e)=>setKeywordFilter({...keywordFilter, minSubs: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
+              <div className="space-y-3 p-3 bg-black/30 rounded-xl border border-white/5 font-bold font-sans font-bold">
+                  <div className="grid grid-cols-2 gap-2 text-left font-bold font-sans">
+                      <div className="space-y-1 font-bold"><p className="text-[9px] text-gray-500 uppercase font-bold">최소 조회수</p><input value={keywordFilter.minViews} onChange={(e)=>setKeywordFilter({...keywordFilter, minViews: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
+                      <div className="space-y-1 font-bold font-sans"><p className="text-[9px] text-gray-500 uppercase font-bold">최소 구독자</p><input value={keywordFilter.minSubs} onChange={(e)=>setKeywordFilter({...keywordFilter, minSubs: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
                   </div>
-                  <div className="space-y-1 text-left"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">결과 개수</p><select value={keywordFilter.maxResults} onChange={(e)=>setKeywordFilter({...keywordFilter, maxResults: e.target.value})} className="bg-black border border-gray-800 w-full p-2 rounded-lg text-xs"><option value="10">10개</option><option value="25">25개</option><option value="50">50개</option></select></div>
+                  <div className="space-y-1 text-left font-bold font-sans font-bold"><p className="text-[9px] text-gray-500 uppercase font-bold">결과 개수</p><select value={keywordFilter.maxResults} onChange={(e)=>setKeywordFilter({...keywordFilter, maxResults: e.target.value})} className="bg-black border border-gray-800 w-full p-2 rounded-lg text-xs font-bold font-sans"><option value="10">10개</option><option value="25">25개</option><option value="50">50개</option></select></div>
               </div>
             )}
 
-            <button onClick={() => handleSearch('keyword')} disabled={isLoading} className="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold uppercase transition hover:bg-blue-700 active:scale-95 font-sans">동영상 검색</button>
+            <button onClick={() => handleSearch('keyword')} disabled={isLoading} className="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold uppercase transition hover:bg-blue-700 active:scale-95 font-sans font-bold">동영상 검색</button>
           </div>
         </section>
 
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Users size={14} /> 채널 직통 검색</h2>
-          <div className="space-y-3 font-bold">
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Users size={14} className="font-bold" /> 채널 직통 검색</h2>
+          <div className="space-y-3 font-bold font-sans">
             <input value={directQuery} onChange={(e) => setDirectQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch('direct')} placeholder="채널명, @핸들, URL" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none font-bold" />
-            <button onClick={() => handleSearch('direct')} disabled={isLoading} className="w-full bg-red-600 py-2.5 rounded-xl text-[11px] font-bold uppercase active:scale-95 transition font-sans">채널 검색</button>
+            <button onClick={() => handleSearch('direct')} disabled={isLoading} className="w-full bg-red-600 py-2.5 rounded-xl text-[11px] font-bold uppercase active:scale-95 transition font-bold font-sans">채널 검색</button>
           </div>
         </section>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 h-full bg-[#0f0f0f] font-bold font-sans">
-        <header className="p-8 pb-4 text-center shrink-0 font-bold font-sans">
+        <header className="p-8 pb-4 text-center shrink-0 font-bold font-sans font-bold">
           <h1 className="text-4xl font-black italic uppercase text-white drop-shadow-lg font-sans">유튜브 채널 탐색기</h1>
         </header>
 
         <nav className="px-8 mt-6 text-left shrink-0 font-bold font-sans">
-          <div className="flex gap-4 border-b border-gray-800 uppercase text-xs tracking-widest font-bold font-sans">
-            <button onClick={() => setViewMode('search_video')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_video' ? 'text-blue-500 border-b-2 border-blue-500 font-bold' : 'text-gray-500 hover:text-white'}`}>필터검색 <span className="bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{videoResults.length}</span></button>
-            <button onClick={() => setViewMode('search_channel')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_channel' ? 'text-red-500 border-b-2 border-red-500 font-bold' : 'text-gray-500 hover:text-white'}`}>채널검색 <span className="bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{channelResults.length}</span></button>
-            <button onClick={() => setViewMode('saved')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'saved' ? 'text-green-500 border-b-2 border-green-500 font-bold' : 'text-gray-500 hover:text-white'}`}>저장목록 <span className="bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{savedChannels.length}</span></button>
+          <div className="flex gap-4 border-b border-gray-800 uppercase text-xs tracking-widest font-bold font-sans font-bold">
+            <button onClick={() => setViewMode('search_video')} className={`pb-3 px-4 flex items-center gap-2 transition font-bold font-sans ${viewMode === 'search_video' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-white'}`}>필터검색 <span className="bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-bold">{videoResults.length}</span></button>
+            <button onClick={() => setViewMode('search_channel')} className={`pb-3 px-4 flex items-center gap-2 transition font-bold font-sans ${viewMode === 'search_channel' ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-500 hover:text-white'}`}>채널검색 <span className="bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-bold">{channelResults.length}</span></button>
+            <button onClick={() => setViewMode('saved')} className={`pb-3 px-4 flex items-center gap-2 transition font-bold font-sans ${viewMode === 'saved' ? 'text-green-500 border-b-2 border-green-500' : 'text-gray-500 hover:text-white'}`}>저장목록 <span className="bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-bold">{savedChannels.length}</span></button>
           </div>
         </nav>
         
-        <div className="px-8 mt-4 flex items-center justify-between shrink-0 font-bold font-sans">
+        <div className="px-8 mt-4 flex items-center justify-between shrink-0 font-bold font-sans font-bold">
           {viewMode === 'saved' ? (
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans">
-              <button onClick={() => setActiveTab('전체')} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border ${activeTab === '전체' ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>전체</button>
+              <button onClick={() => setActiveTab('전체')} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border ${activeTab === '전체' ? 'bg-white text-black border-white shadow-lg' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>전체</button>
               {categories.map(cat => (
                 <button key={cat.id} onClick={() => setActiveTab(cat.name)} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border flex items-center gap-2 ${activeTab === cat.name ? 'bg-orange-600 text-white border-orange-600 shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>{cat.name}
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400 font-bold"></div>{cat.name}
                 </button>
               ))}
-              <button onClick={() => setIsModalOpen(true)} className="p-1.5 text-gray-500 hover:text-white" title="카테고리 수정"><FolderEdit size={16} /></button>
+              <button onClick={() => setIsModalOpen(true)} className="p-1.5 text-gray-500 hover:text-white font-bold" title="카테고리 수정"><FolderEdit size={16} /></button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans">
-              <span className="text-[10px] text-gray-500 uppercase mr-2 font-medium">Sort by:</span>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans font-bold">
+              <span className="text-[10px] text-gray-500 uppercase mr-2 font-bold">Sort by:</span>
               {[
                 { label: "조회수 순", key: "views" }, 
                 { label: "효율 순", key: "efficiency" }, 
@@ -731,33 +728,33 @@ export default function App() {
                 { label: "최신 순", key: "latest" },
                 { label: "빈도 순", key: "frequency" }
               ].map(s => (
-                <button key={s.key} onClick={() => setSortKey(s.key)} className={`px-4 py-1.5 rounded-full text-[11px] border transition font-bold ${sortKey === s.key ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>{s.label}</button>
+                <button key={s.key} onClick={() => setSortKey(s.key)} className={`px-4 py-1.5 rounded-full text-[11px] border transition font-bold font-sans font-bold ${sortKey === s.key ? 'bg-white text-black border-white shadow-lg' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>{s.label}</button>
               ))}
             </div>
           )}
         </div>
 
-        <div className="px-8 py-8 flex-1 overflow-y-auto no-scrollbar font-sans font-bold">
+        <div className="px-8 py-8 flex-1 overflow-y-auto no-scrollbar font-sans font-bold font-sans font-bold font-sans font-bold font-sans font-bold font-sans font-bold">
           {isLoading ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-500 font-bold font-sans">
-              <Loader2 size={48} className="animate-spin text-red-600 mb-4 opacity-50" />
-              <p className="font-bold uppercase tracking-widest font-sans">데이터 분석 중...</p>
+              <Loader2 size={48} className="animate-spin text-red-600 mb-4 opacity-50 font-bold" />
+              <p className="font-bold uppercase tracking-widest font-sans font-bold font-sans font-bold font-sans font-bold font-sans font-bold">데이터 분석 중...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 font-bold font-sans">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 font-bold font-sans font-bold font-sans font-bold font-sans font-bold font-sans font-bold">
               {viewMode === 'search_video' && (
-                sortedVideos.length > 0 ? sortedVideos.map(res => <ChannelCard key={res.videoId} result={res} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="video" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
+                sortedVideos.length > 0 ? sortedVideos.map(res => <ChannelCard key={res.videoId} result={res} user={user} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="video" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
                   <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">검색 결과가 없습니다.</div>
                 )
               )}
               {viewMode === 'search_channel' && (
-                sortedChannels.length > 0 ? sortedChannels.map(res => <ChannelCard key={res.channelId} result={res} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="channel" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
-                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">채널 결과가 없습니다.</div>
+                sortedChannels.length > 0 ? sortedChannels.map(res => <ChannelCard key={res.channelId} result={res} user={user} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="channel" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
+                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium font-bold font-sans font-bold">채널 결과가 없습니다.</div>
                 )
               )}
               {viewMode === 'saved' && (
-                filteredSaved.length > 0 ? filteredSaved.map(ch => <ChannelCard key={ch.id} result={ch} onRemove={(id) => deleteDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id))} onUpdateCategory={(id, c) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { category: c })} onUpdateMemo={(id, m) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { memo: m })} onAnalyze={setAnalysisChannel} isSavedView={true} categories={categories} mode={ch.type} />) : (
-                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">저장된 채널이 없습니다.</div>
+                filteredSaved.length > 0 ? filteredSaved.map(ch => <ChannelCard key={ch.id} result={ch} user={user} onRemove={(id) => deleteDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id))} onUpdateCategory={(id, c) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { category: c })} onUpdateMemo={(id, m) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { memo: m })} onAnalyze={setAnalysisChannel} isSavedView={true} categories={categories} mode={ch.type} />) : (
+                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium font-bold font-sans font-bold">저장된 채널이 없습니다.</div>
                 )
               )}
             </div>
