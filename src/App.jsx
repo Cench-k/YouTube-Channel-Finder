@@ -4,7 +4,8 @@ import {
   Calendar, BookmarkPlus, ListVideo, Users, PlaySquare, Loader2, Edit3, Check, 
   Database, Info, AlertCircle, RefreshCw, ArrowRight, Zap, LogIn, LogOut, User, 
   CheckCircle, CheckCircle2, Video, BarChart3, TrendingUp, SortAsc, Clock, 
-  Activity, ThumbsUp, ChevronDown, ChevronUp, Tag, Languages, Radio, Copy, Globe
+  Activity, ThumbsUp, ChevronDown, ChevronUp, Tag, Languages, Radio, Copy, Globe,
+  Clock3, Sparkles
 } from 'lucide-react';
 
 import { initializeApp, getApps, deleteApp } from 'firebase/app';
@@ -19,7 +20,7 @@ import {
 // 환경에 따른 App ID 설정
 const appId = typeof __app_id !== 'undefined' ? __app_id : "yt-finder-v1"; 
 
-// --- 유틸리티 ---
+// --- 데이터 및 유틸리티 ---
 const VIDEO_CATEGORIES = {
     "1": "영화/애니메이션", "2": "자동차", "10": "음악", "15": "애완동물/동물", "17": "스포츠",
     "18": "단편영화", "19": "여행/이벤트", "20": "게임", "21": "일상/브이로그", "22": "인물/블로그",
@@ -43,6 +44,17 @@ const parseISO8601Duration = (duration) => {
     const m = (parseInt(match[2]) || 0);
     const s = (parseInt(match[3]) || 0);
     return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
+};
+
+// 숏폼 여부 판단 유틸리티 (60초 이하인 경우)
+const isShorts = (duration) => {
+    if (!duration) return false;
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return false;
+    const h = (parseInt(match[1]) || 0);
+    const m = (parseInt(match[2]) || 0);
+    const s = (parseInt(match[3]) || 0);
+    return h === 0 && m < 1 && s <= 60;
 };
 
 // --- 서브 컴포넌트 ---
@@ -87,7 +99,6 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
         try {
           const cid = channel.channelId;
           const ago30 = new Date(Date.now() - 30 * 86400000).toISOString();
-          // 채널 정보 요청 시 topicDetails 추가
           const [chRes, sRes] = await Promise.all([
             fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet,brandingSettings,topicDetails&id=${cid}&key=${apiKey}`),
             fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&type=video&order=date&maxResults=50&publishedAfter=${ago30}&key=${apiKey}`)
@@ -115,9 +126,8 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
             if (dMap[d] !== undefined) { if(dMap[d]===0) uDays++; dMap[d]++; }
           });
 
-          // 토픽 카테고리 추출
           const topics = topicDetails.topicCategories 
-            ? topicDetails.topicCategories.map(url => url.split('/').pop().replace('_', ' '))
+            ? topicDetails.topicCategories.map(url => url.split('/').pop().replace(/_/g, ' '))
             : [];
 
           setStats({
@@ -154,10 +164,10 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
         <div className="flex justify-between items-center p-6 border-b border-gray-800 bg-[#131313] shrink-0 relative z-10 font-bold">
           <div className="flex items-center gap-4 min-w-0 text-left font-bold">
             <div className={`w-16 h-16 rounded-full overflow-hidden border-2 border-red-600/50 bg-gray-800 shrink-0 ${stats?.banner ? '-mt-12 shadow-xl' : ''}`}>
-              <img src={channel?.thumbnail || channel?.thumb} alt="" className="w-full h-full object-cover" />
+              <img src={channel?.thumbnail || channel?.thumb} alt="" className="w-full h-full object-cover font-bold" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-xl font-bold truncate">{channel?.name || channel?.title || channel?.channelTitle}</h2>
+              <h2 className="text-xl font-bold truncate font-sans">{channel?.name || channel?.title || channel?.channelTitle}</h2>
               <div className="flex items-center gap-2 mt-1 font-bold">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest font-sans font-bold">Channel Analysis</p>
                 {stats?.isLive && <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full animate-pulse flex items-center gap-1 font-sans"><Radio size={10}/> LIVE</span>}
@@ -166,31 +176,30 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition p-2 bg-white/5 rounded-full font-bold"><X size={28} /></button>
         </div>
-        <div className="p-8 overflow-y-auto space-y-10 flex-1 text-left no-scrollbar">
+        <div className="p-8 overflow-y-auto space-y-10 flex-1 text-left no-scrollbar font-bold">
           {loading ? (
-            <div className="h-64 flex flex-col items-center justify-center text-gray-500 font-bold">
-              <Loader2 className="animate-spin mb-4" size={48} /><p className="uppercase tracking-widest text-xs font-sans">데이터 분석 중...</p>
+            <div className="h-64 flex flex-col items-center justify-center text-gray-500 font-bold font-sans">
+              <Loader2 className="animate-spin mb-4" size={48} /><p className="uppercase tracking-widest text-xs">데이터 분석 중...</p>
             </div>
           ) : stats ? (
             <>
-              {/* 추가된 키워드 및 주제 섹션 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-bold">
                 {stats.keywords.length > 0 && (
-                  <section className="space-y-3">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><Tag size={14} /> 채널 키워드</h3>
+                  <section className="space-y-3 font-bold">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans"><Tag size={14} /> 채널 키워드</h3>
                     <div className="flex flex-wrap gap-2">
                       {stats.keywords.slice(0, 10).map((kw, i) => (
-                        <span key={i} className="bg-white/5 border border-white/10 px-2 py-1 rounded-lg text-[10px] text-gray-400 font-sans">#{kw.replace(/"/g, '')}</span>
+                        <span key={i} className="bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-[10px] text-gray-400 font-sans font-medium">#{kw.replace(/"/g, '')}</span>
                       ))}
                     </div>
                   </section>
                 )}
                 {stats.topics.length > 0 && (
-                  <section className="space-y-3">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><Globe size={14} /> 주요 주제</h3>
+                  <section className="space-y-3 font-bold">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans"><Globe size={14} /> 주요 주제</h3>
                     <div className="flex flex-wrap gap-2">
                       {stats.topics.map((tp, i) => (
-                        <span key={i} className="bg-red-600/10 border border-red-600/20 px-2 py-1 rounded-lg text-[10px] text-red-400 font-sans capitalize">{tp}</span>
+                        <span key={i} className="bg-red-600/10 border border-red-600/20 px-2.5 py-1 rounded-lg text-[10px] text-red-400 font-sans capitalize font-medium">{tp}</span>
                       ))}
                     </div>
                   </section>
@@ -198,66 +207,71 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
               </div>
 
               <section className="space-y-4 font-bold">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-bold font-sans"><BarChart3 size={16} className="text-red-500" /> 활동 요약</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><BarChart3 size={16} className="text-red-500" /> 활동 요약</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-bold">
                     {[
                         { val: stats.totalUploads, label: "30일 업로드", color: "text-red-600" },
                         { val: stats.totalUploads > 0 ? `${(30/stats.totalUploads).toFixed(1)}일` : "-", label: "빈도", color: "text-red-500" },
                         { val: stats.uploadDays, label: "활동 날짜", color: "text-red-600" },
                         { val: formatNumber(stats.maxViews), label: "최다 조회수", color: "text-red-500" }
                     ].map((card, i) => (
-                        <div key={i} className="bg-[#111] border border-gray-800 p-4 rounded-xl text-center shadow-inner">
+                        <div key={i} className="bg-[#111] border border-gray-800 p-4 rounded-xl text-center shadow-inner font-sans">
                             <p className={`text-xl font-bold ${card.color}`}>{card.val}</p>
                             <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">{card.label}</p>
                         </div>
                     ))}
                 </div>
               </section>
+              
               <section className="space-y-4 font-bold">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-bold font-sans"><TrendingUp size={16} className="text-green-500" /> 조회수 분석</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><TrendingUp size={16} className="text-green-500" /> 조회수 분석</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans font-bold">
                   <div className="bg-orange-600/5 border border-orange-600/20 p-5 rounded-2xl text-center">
-                    <p className="text-3xl font-bold text-orange-500">{formatNumber(stats.avgRecentViews)}</p>
+                    <p className="text-3xl font-bold text-orange-500 font-sans">{formatNumber(stats.avgRecentViews)}</p>
                     <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">최근 30일 평균</p>
                   </div>
                   <div className="bg-blue-600/5 border border-blue-600/20 p-5 rounded-2xl text-center font-bold">
-                    <p className="text-3xl font-bold text-blue-500">{formatNumber(stats.avgAllTimeViews)}</p>
+                    <p className="text-3xl font-bold text-blue-500 font-sans">{formatNumber(stats.avgAllTimeViews)}</p>
                     <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold">역대 일평균</p>
                   </div>
                 </div>
               </section>
+
               <div className="space-y-4 text-left font-bold font-sans">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-bold font-sans"><Calendar size={16} /> 업로드 달력 (30일)</h3>
-                <div className="grid grid-cols-7 gap-2 bg-black/30 p-4 rounded-2xl border border-white/5 text-center font-bold">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><Calendar size={16} /> 업로드 달력 (30일)</h3>
+                <div className="grid grid-cols-7 gap-2 bg-black/30 p-4 rounded-2xl border border-white/5 text-center font-bold font-sans">
                   {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d => (
-                    <div key={d} className="text-[9px] text-gray-600 font-bold mb-1 font-sans">{d}</div>
+                    <div key={d} className="text-[9px] text-gray-600 font-bold mb-1">{d}</div>
                   ))}
                   {Object.entries(stats.dateMap).reverse().map(([date, count]) => (
-                    <div key={date} className={`aspect-square rounded-lg flex flex-col items-center justify-center border transition ${count > 0 ? 'bg-red-600/20 border-red-600/40 text-red-500 shadow-lg font-bold' : 'bg-white/5 border-transparent text-gray-700'}`}>
-                      <span className="text-[9px] opacity-40 font-sans">{date.split('-')[2]}</span>
-                      {count > 0 && <span className="text-xs font-bold font-sans">{count}</span>}
+                    <div key={date} className={`aspect-square rounded-lg flex flex-col items-center justify-center border transition ${count > 0 ? 'bg-red-600/20 border-red-600/40 text-red-500 shadow-lg font-bold' : 'bg-white/5 border-transparent text-gray-700 font-medium'}`}>
+                      <span className="text-[9px] opacity-40">{date.split('-')[2]}</span>
+                      {count > 0 && <span className="text-xs font-bold">{count}</span>}
                     </div>
                   ))}
                 </div>
               </div>
+
               <div className="space-y-4 text-left font-bold font-sans">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-bold font-sans"><ListVideo size={16} className="font-bold" /> 최근 업로드 상세 (10개)</h3>
-                <div className="grid grid-cols-1 gap-3 font-sans">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 font-sans font-bold"><ListVideo size={16} className="font-bold" /> 최근 업로드 상세 (10개)</h3>
+                <div className="grid grid-cols-1 gap-3 font-sans font-bold">
                   {stats.recentVideos.map(vid => {
                      const vV = parseInt(vid.statistics?.viewCount || 0);
                      const sC = parseInt(stats.subCount) || 1;
+                     const shorts = isShorts(vid.contentDetails?.duration);
                      return (
-                        <a key={vid.id} href={`https://www.youtube.com/watch?v=${vid.id}`} target="_blank" rel="noreferrer" className="flex gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 group transition font-bold font-sans">
+                        <a key={vid.id} href={`https://www.youtube.com/watch?v=${vid.id}`} target="_blank" rel="noreferrer" className="flex gap-4 p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 group transition font-bold">
                             <div className="w-28 aspect-video rounded overflow-hidden shrink-0 bg-gray-900 relative font-bold">
                                 <img src={vid.snippet.thumbnails.medium?.url} className="w-full h-full object-cover" alt="" />
-                                <div className="absolute bottom-1 right-1 bg-black/80 text-[10px] px-1.5 py-0.5 rounded font-bold text-white font-sans font-bold">{parseISO8601Duration(vid.contentDetails?.duration)}</div>
+                                <div className="absolute bottom-1 right-1 bg-black/80 text-[10px] px-1.5 py-0.5 rounded font-bold text-white font-sans">{parseISO8601Duration(vid.contentDetails?.duration)}</div>
+                                {shorts && <div className="absolute top-1 left-1 bg-red-600 text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold flex items-center gap-0.5"><Zap size={8} fill="white"/> SHORTS</div>}
                             </div>
                             <div className="min-w-0 flex-1 flex flex-col justify-between font-bold">
-                                <p className="text-[13px] text-white font-bold whitespace-normal line-clamp-2 leading-snug group-hover:text-red-400 transition font-sans">{vid.snippet.title}</p>
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] text-gray-500 font-sans font-bold">
-                                    <span className="bg-red-600/10 text-red-500 px-1.5 rounded font-bold">{VIDEO_CATEGORIES[vid.snippet.categoryId] || "기타"}</span>
-                                    <span className="flex items-center gap-1 font-bold font-sans font-bold"><TrendingUp size={12}/> {formatNumber(vV)}</span>
-                                    <span className="text-yellow-500 font-bold ml-auto font-sans font-bold">효율 {(vV/sC).toFixed(1)}배</span>
+                                <p className="text-[13px] text-white font-bold whitespace-normal line-clamp-2 leading-snug group-hover:text-red-400 transition">{vid.snippet.title}</p>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] text-gray-500 font-sans font-medium">
+                                    <span className="bg-red-600/10 text-red-500 px-1.5 rounded-sm">{VIDEO_CATEGORIES[vid.snippet.categoryId] || "기타"}</span>
+                                    <span className="flex items-center gap-1"><TrendingUp size={12}/> {formatNumber(vV)}</span>
+                                    <span className="text-yellow-500 font-bold ml-auto">효율 {(vV/sC).toFixed(1)}배</span>
                                 </div>
                             </div>
                         </a>
@@ -276,7 +290,7 @@ const AnalysisModal = ({ isOpen, onClose, channel, apiKey }) => {
   );
 };
 
-const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, onSave, onAnalyze, mode, onUpdateCategory, db }) => {
+const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, onSave, onAnalyze, mode, onUpdateCategory }) => {
   const [selectedCategory, setSelectedCategory] = useState(result.category || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [tempMemo, setTempMemo] = useState(result.memo || '');
@@ -290,25 +304,25 @@ const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, 
 
   return (
     <div className="bg-[#1e1e1e] border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition-all flex flex-col h-full text-white shadow-lg text-left font-bold font-sans">
-      <div className="flex gap-4 mb-4 font-bold">
+      <div className="flex gap-4 mb-4 font-bold font-sans">
         <div onClick={() => onAnalyze(result)} className={`shrink-0 overflow-hidden shadow-inner flex items-center justify-center bg-gray-800 cursor-pointer hover:ring-2 hover:ring-red-500 transition font-bold font-sans ${isVideo ? 'w-24 h-14 rounded-lg' : 'w-16 h-16 rounded-full'}`}>
-          <img src={result.thumbnail || result.thumb} alt="" className="w-full h-full object-cover font-bold" />
+          <img src={result.thumbnail || result.thumb} alt="" className="w-full h-full object-cover font-bold font-sans" />
         </div>
-        <div className="flex-1 min-w-0 font-bold">
-          <h3 className="text-[13px] font-bold whitespace-normal line-clamp-2 leading-snug mb-1.5 h-10 font-bold">{result.title || result.name}</h3>
-          <div className="flex flex-wrap gap-1.5 mt-1 font-bold">
-             <span className="bg-gray-800 text-gray-400 text-[9px] px-2 py-0.5 rounded-full uppercase font-sans font-bold">{(isVideo || result.videoId) ? 'Video' : 'Channel'}</span>
+        <div className="flex-1 min-w-0 font-bold font-sans">
+          <h3 className="text-[13px] font-bold whitespace-normal line-clamp-2 leading-snug mb-1.5 h-10 font-sans">{result.title || result.name}</h3>
+          <div className="flex flex-wrap gap-1.5 mt-1 font-bold font-sans">
+             <span className="bg-gray-800 text-gray-400 text-[9px] px-2 py-0.5 rounded-full uppercase font-sans">{(isVideo || result.videoId) ? 'Video' : 'Channel'}</span>
              {result.efficiency > 0 && <span className="bg-orange-600/20 text-orange-400 text-[9px] px-2 py-0.5 rounded-full font-bold font-sans">🔥 효율 {result.efficiency.toFixed(1)}배</span>}
           </div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3 font-sans font-bold">
         <div className="bg-black/20 p-2 rounded-xl border border-white/5 text-center font-bold">
-          <p className="text-[9px] text-gray-500 uppercase text-left font-bold">Views</p>
+          <p className="text-[9px] text-gray-500 uppercase text-left font-bold font-sans">Views</p>
           <p className="text-xs text-blue-400 font-bold font-sans">{formatNumber(result.views || 0)}</p>
         </div>
         <div className="bg-black/20 p-2 rounded-xl border border-white/5 text-center font-bold">
-          <p className="text-[9px] text-gray-500 uppercase text-left font-bold">Subs</p>
+          <p className="text-[9px] text-gray-500 uppercase text-left font-bold font-sans">Subs</p>
           <p className="text-xs text-green-400 font-bold font-sans">{formatNumber(result.subs || 0)}</p>
         </div>
       </div>
@@ -320,19 +334,19 @@ const ChannelCard = ({ result, onRemove, onUpdateMemo, isSavedView, categories, 
             </select>
             {!isEditingMemo ? <button onClick={() => setIsEditingMemo(true)} className="text-gray-500 hover:text-white transition font-bold"><Edit3 size={14} /></button> : <button onClick={() => { onUpdateMemo(result.id, tempMemo); setIsEditingMemo(false); }} className="text-green-500 hover:text-green-400 transition font-bold font-sans"><Check size={16} /></button>}
           </div>
-          {isEditingMemo ? <textarea autoFocus value={tempMemo} onChange={(e) => setTempMemo(e.target.value)} className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs text-gray-300 focus:border-red-600 outline-none resize-none h-20 transition font-bold font-sans font-bold" /> : <div className="bg-black/20 rounded-xl p-3 min-h-[40px] border border-white/5 text-left text-[11px] text-gray-400 line-clamp-3 font-bold font-sans">{result.memo || "작성된 메모가 없습니다."}</div>}
+          {isEditingMemo ? <textarea autoFocus value={tempMemo} onChange={(e) => setTempMemo(e.target.value)} className="w-full bg-black/40 border border-gray-700 rounded-xl p-3 text-xs text-gray-300 focus:border-red-600 outline-none resize-none h-20 transition font-bold font-sans" /> : <div className="bg-black/20 rounded-xl p-3 min-h-[40px] border border-white/5 text-left text-[11px] text-gray-400 line-clamp-3 font-medium font-sans">{result.memo || "작성된 메모가 없습니다."}</div>}
         </div>
       ) : (
-        <div className="mb-4 font-bold font-sans font-bold">
+        <div className="mb-4 font-bold font-sans">
           <p className="text-[10px] text-gray-500 mb-2 uppercase tracking-widest font-sans font-bold">저장 위치</p>
-          <select className="w-full bg-gray-800 text-gray-300 text-xs px-3 py-2 rounded-xl border border-gray-700 focus:outline-none cursor-pointer font-sans font-bold" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          <select className="w-full bg-gray-800 text-gray-300 text-xs px-3 py-2 rounded-xl border border-gray-700 focus:outline-none cursor-pointer font-bold font-sans" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             {categories.length > 0 ? categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>) : <option value="">카테고리 없음</option>}
           </select>
         </div>
       )}
-      <div className="flex gap-2 mt-auto font-bold font-sans font-bold">
-        {!isSavedView ? <button onClick={() => onSave(result, selectedCategory, (isVideo || result.videoId) ? 'video' : 'channel')} className="flex-1 bg-white text-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 font-bold shadow-md font-sans">저장하기</button> : (
-          <button onClick={() => onRemove(result.id)} className="flex-1 bg-red-600/20 text-red-500 text-xs py-2.5 rounded-xl border border-red-600/30 hover:bg-red-600 hover:text-white transition font-bold font-sans font-bold">삭제</button>
+      <div className="flex gap-2 mt-auto font-bold font-sans">
+        {!isSavedView ? <button onClick={() => onSave(result, selectedCategory, (isVideo || result.videoId) ? 'video' : 'channel')} className="flex-1 bg-white text-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 font-bold shadow-md">저장하기</button> : (
+          <button onClick={() => onRemove(result.id)} className="flex-1 bg-red-600/20 text-red-500 text-xs py-2.5 rounded-xl border border-red-600/30 hover:bg-red-600 hover:text-white transition font-bold font-sans">삭제</button>
         )}
         <button onClick={() => onAnalyze(result)} className="p-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 transition shrink-0 flex items-center justify-center font-bold" title="상세분석"><BarChart3 size={16} /></button>
       </div>
@@ -371,7 +385,6 @@ export default function App() {
     order: 'viewCount', minViews: '', maxViews: '', minSubs: '', maxSubs: '', maxResults: '25'
   });
 
-  // Firebase 서비스를 동적으로 생성
   const services = useMemo(() => {
     if (!fbConfig) return null;
     try {
@@ -385,17 +398,13 @@ export default function App() {
       }
       const newApp = initializeApp(fbConfig);
       return { auth: getAuth(newApp), db: getFirestore(newApp) };
-    } catch (err) {
-      console.error("Firebase Init Error:", err);
-      return null;
-    }
+    } catch (err) { return null; }
   }, [fbConfig]);
 
-  // 설정 저장 핸들러
   const handleSaveConfig = () => {
     try {
       const match = configInput.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("Object not found");
+      if (!match) throw new Error();
       const cleanJson = match[0]
         .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
         .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
@@ -407,10 +416,9 @@ export default function App() {
         localStorage.setItem('dynamic-fb-config', JSON.stringify(parsed));
         setFbConfig(parsed);
       } else { alert("필수 항목(apiKey, projectId)이 누락되었습니다."); }
-    } catch (e) { alert("형식이 올바르지 않습니다. { } 부분을 정확히 붙여넣으세요."); }
+    } catch (e) { alert("연결 정보 형식이 올바르지 않습니다."); }
   };
 
-  // 인증 상태 리스너
   useEffect(() => {
     if (!services) { setAuthLoading(false); return; }
     const unsubscribe = onAuthStateChanged(services.auth, (u) => {
@@ -420,19 +428,12 @@ export default function App() {
     return () => unsubscribe();
   }, [services]);
 
-  // 구글 로그인
   const handleGoogleLogin = async () => {
     if (!services) return;
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(services.auth, provider);
-    } catch (err) {
-      console.error("Login Error:", err);
-      alert("구글 로그인에 실패했습니다. Firebase 콘솔에서 도메인 승인 및 구글 로그인이 활성화되어 있는지 확인하세요.");
-    }
+    try { await signInWithPopup(services.auth, provider); } catch (err) { alert("로그인 실패"); }
   };
 
-  // 로그아웃
   const handleLogout = async () => {
     if (services) {
       await signOut(services.auth);
@@ -441,20 +442,12 @@ export default function App() {
     }
   };
 
-  // 데이터 구독
   useEffect(() => {
     if (!services || !user) return;
     const { db } = services;
-    
-    const unsubCat = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'categories'), 
-        (s) => setCategories(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    
-    const unsubCh = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'channels'), 
-        (s) => setSavedChannels(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    
-    const unsubSet = onSnapshot(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'youtube'), 
-        (d) => { if (d.exists()) { setApiKey(d.data().key); setIsApiKeySaved(true); }});
-        
+    const unsubCat = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'categories'), (s) => setCategories(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubCh = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'channels'), (s) => setSavedChannels(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSet = onSnapshot(doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'youtube'), (d) => { if (d.exists()) { setApiKey(d.data().key); setIsApiKeySaved(true); }});
     return () => { unsubCat(); unsubCh(); unsubSet(); };
   }, [services, user]);
 
@@ -467,49 +460,52 @@ export default function App() {
       if (type === 'direct') {
           let searchUrl = '';
           const q = directQuery.trim();
-          if (q.startsWith('@')) {
-            searchUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle=${encodeURIComponent(q)}&key=${apiKey}`;
-          } else if (q.includes('youtube.com/')) {
+          if (q.startsWith('@')) { searchUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle=${encodeURIComponent(q)}&key=${apiKey}`; }
+          else if (q.includes('youtube.com/')) {
             const match = q.match(/\/(?:channel\/|@)([\w-]+)/);
             if (match) {
-              searchUrl = q.includes('/channel/') 
-                ? `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${match[1]}&key=${apiKey}`
-                : `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle=@${match[1]}&key=${apiKey}`;
+              searchUrl = q.includes('/channel/') ? `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${match[1]}&key=${apiKey}` : `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle=@${match[1]}&key=${apiKey}`;
             }
           }
-          
           if (searchUrl) {
             const res = await fetch(searchUrl); const data = await res.json();
             if (data.items?.length) {
-              setChannelResults(data.items.map(c => ({
-                channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
-                subs: parseInt(c.statistics.subscriberCount || 0), views: parseInt(c.statistics.viewCount || 0), 
-                publishTime: c.snippet.publishedAt, type: 'channel'
-              })));
+              setChannelResults(data.items.map(c => {
+                  const subs = parseInt(c.statistics.subscriberCount || 1);
+                  const views = parseInt(c.statistics.viewCount || 0);
+                  const videos = parseInt(c.statistics.videoCount || 1);
+                  const ageDays = Math.max((Date.now() - new Date(c.snippet.publishedAt).getTime()) / 86400000, 1);
+                  return {
+                    channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
+                    subs, views, efficiency: views / subs, uploadRate: videos / ageDays, 
+                    publishTime: c.snippet.publishedAt, type: 'channel'
+                  };
+              }));
               setIsLoading(false); return;
             }
           }
-
           const sRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=10&q=${encodeURIComponent(q)}&key=${apiKey}`);
           const sData = await sRes.json();
           const cIds = sData.items?.map(i => i.id.channelId).join(',');
           if (cIds) {
             const dRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${cIds}&key=${apiKey}`);
             const dData = await dRes.json();
-            setChannelResults(dData.items?.map(c => ({
-              channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
-              subs: parseInt(c.statistics.subscriberCount || 0), views: parseInt(c.statistics.viewCount || 0), 
-              publishTime: c.snippet.publishedAt, type: 'channel'
-            })) || []);
+            setChannelResults(dData.items?.map(c => {
+                const subs = parseInt(c.statistics.subscriberCount || 1);
+                const views = parseInt(c.statistics.viewCount || 0);
+                const videos = parseInt(c.statistics.videoCount || 1);
+                const ageDays = Math.max((Date.now() - new Date(c.snippet.publishedAt).getTime()) / 86400000, 1);
+                return {
+                    channelId: c.id, name: c.snippet.title, thumbnail: c.snippet.thumbnails.medium?.url,
+                    subs, views, efficiency: views / subs, uploadRate: videos / ageDays, 
+                    publishTime: c.snippet.publishedAt, type: 'channel'
+                };
+            }) || []);
           }
       } else {
         const [reg, lng] = keywordFilter.region.split('|');
-        const pubAfter = keywordFilter.period === 'custom' 
-          ? new Date(parseInt(keywordFilter.customYear), parseInt(keywordFilter.customMonth) - 1, parseInt(keywordFilter.customDay) || 1).toISOString()
-          : new Date(Date.now() - parseInt(keywordFilter.period) * 86400000).toISOString();
-
+        const pubAfter = keywordFilter.period === 'custom' ? new Date(parseInt(keywordFilter.customYear), parseInt(keywordFilter.customMonth) - 1, parseInt(keywordFilter.customDay) || 1).toISOString() : new Date(Date.now() - parseInt(keywordFilter.period) * 86400000).toISOString();
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${keywordFilter.maxResults}&q=${encodeURIComponent(keywordFilter.keyword)}&key=${apiKey}&order=${keywordFilter.order}&publishedAfter=${pubAfter}`;
-        
         if (reg) url += `&regionCode=${reg}`;
         if (lng) url += `&relevanceLanguage=${lng}`;
         if (keywordFilter.duration !== 'any') url += `&videoDuration=${keywordFilter.duration}`;
@@ -518,17 +514,14 @@ export default function App() {
         const data = await res.json();
         const items = data.items || [];
         const vIds = items.map(i => i.id.videoId).join(',');
-        
         if (vIds) {
           const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${vIds}&key=${apiKey}`);
           const vData = await vRes.json();
           const vMap = {}; vData.items?.forEach(v => vMap[v.id] = v);
-          
           const cIds = [...new Set(items.map(i => i.snippet.channelId))].join(',');
           const cRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${cIds}&key=${apiKey}`);
           const cData = await cRes.json();
           const cMap = {}; cData.items?.forEach(c => cMap[c.id] = c);
-
           let final = items.map(i => {
             const vF = vMap[i.id.videoId] || { statistics: {}, contentDetails: {} };
             const chF = cMap[i.snippet.channelId] || { statistics: {} };
@@ -536,19 +529,10 @@ export default function App() {
             const subs = parseInt(chF.statistics?.subscriberCount || 1);
             const videos = parseInt(chF.statistics?.videoCount || 1);
             const ageDays = Math.max((Date.now() - new Date(chF.snippet?.publishedAt || 0).getTime()) / 86400000, 1);
-            return {
-              videoId: i.id.videoId, channelId: i.snippet.channelId,
-              title: i.snippet.title, thumbnail: i.snippet.thumbnails.medium?.url,
-              views, subs, efficiency: views / Math.max(subs, 1), 
-              uploadRate: videos / ageDays,
-              publishTime: i.snippet.publishedAt,
-              type: 'video'
-            };
+            return { videoId: i.id.videoId, channelId: i.snippet.channelId, title: i.snippet.title, thumbnail: i.snippet.thumbnails.medium?.url, views, subs, efficiency: views / Math.max(subs, 1), uploadRate: videos / ageDays, publishTime: i.snippet.publishedAt, type: 'video' };
           });
-
           if (keywordFilter.minViews) final = final.filter(r => r.views >= parseInt(keywordFilter.minViews));
           if (keywordFilter.minSubs) final = final.filter(r => r.subs >= parseInt(keywordFilter.minSubs));
-
           setVideoResults(final);
         }
       }
@@ -573,16 +557,7 @@ export default function App() {
 
   const filteredSaved = useMemo(() => savedChannels.filter(ch => activeTab === '전체' || ch.category === activeTab), [savedChannels, activeTab]);
 
-  // --- 조건부 렌더링 ---
-
-  if (authLoading) {
-    return (
-      <div className="h-screen bg-[#0f0f0f] text-white flex flex-col items-center justify-center font-bold">
-        <RefreshCw size={48} className="text-blue-600 animate-spin mb-4" />
-        <p className="font-sans">준비 중...</p>
-      </div>
-    );
-  }
+  if (authLoading) return <div className="h-screen bg-[#0f0f0f] text-white flex flex-col items-center justify-center font-bold"><RefreshCw size={48} className="text-blue-600 animate-spin mb-4" /><p className="font-sans">준비 중...</p></div>;
 
   if (!fbConfig) {
     return (
@@ -590,7 +565,7 @@ export default function App() {
         <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl">
           <Database size={56} className="text-blue-600 mx-auto animate-pulse" />
           <h1 className="text-3xl font-black italic uppercase">Project Setup</h1>
-          <p className="text-gray-400 text-sm">Firebase 콘솔에서 복사한<br/>firebaseConfig 객체를 아래에 붙여넣으세요.</p>
+          <p className="text-gray-400 text-sm">Firebase 설정 JSON을 붙여넣으세요.</p>
           <textarea value={configInput} onChange={(e) => setConfigInput(e.target.value)} placeholder="const firebaseConfig = { ... };" className="w-full bg-black/50 border border-gray-800 rounded-2xl p-4 text-[11px] h-40 outline-none focus:border-blue-600 font-mono" />
           <button onClick={handleSaveConfig} className="w-full bg-blue-600 py-4 rounded-2xl font-bold active:scale-95 transition">연결하기</button>
         </div>
@@ -601,15 +576,11 @@ export default function App() {
   if (!user) {
     return (
       <div className="h-screen bg-[#0f0f0f] text-white flex items-center justify-center p-6 text-center font-bold">
-        <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl">
+        <div className="max-w-md w-full space-y-8 bg-[#1e1e1e] p-10 rounded-[2.5rem] border border-gray-800 shadow-2xl font-bold font-sans">
           <Youtube size={64} className="text-red-600 mx-auto" />
           <h1 className="text-3xl font-black uppercase italic">YT Finder</h1>
-          <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 text-xs font-sans">
-            프로젝트 연결 완료: {fbConfig.projectId}
-          </div>
-          <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-5 rounded-2xl flex items-center justify-center gap-3 font-bold transition active:scale-95 shadow-lg">
-            <LogIn size={24} className="text-blue-600" /> Google 로그인
-          </button>
+          <div className="bg-blue-600/10 p-4 rounded-2xl border border-blue-600/20 text-blue-400 text-xs font-sans font-medium">프로젝트 연결됨: {fbConfig.projectId}</div>
+          <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-5 rounded-2xl flex items-center justify-center gap-3 font-bold transition active:scale-95 shadow-lg"><LogIn size={24} className="text-blue-600" /> Google 로그인 시작</button>
           <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="text-[10px] text-gray-500 underline uppercase tracking-widest">설정 초기화</button>
         </div>
       </div>
@@ -618,10 +589,10 @@ export default function App() {
 
   return (
     <div className="h-screen bg-[#0f0f0f] text-white flex flex-col md:flex-row tracking-tight font-sans overflow-hidden font-bold">
-      <aside className="w-full md:w-80 h-full border-r border-gray-800 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar bg-[#0f0f0f] z-10 font-bold">
+      <aside className="w-full md:w-80 h-full border-r border-gray-800 p-6 flex flex-col gap-6 overflow-y-auto no-scrollbar bg-[#0f0f0f] z-10 font-bold font-sans">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2"><Youtube className="text-red-600" size={32} /><h1 className="text-xl italic font-sans font-bold">YT Finder</h1></div>
-          <button onClick={handleLogout} className="p-2 bg-gray-800 rounded-xl hover:bg-red-600 transition" title="Logout"><LogOut size={16} /></button>
+          <div className="flex items-center gap-2 font-bold font-sans"><Youtube className="text-red-600" size={32} /><h1 className="text-xl italic">YT Finder</h1></div>
+          <button onClick={handleLogout} className="p-2 bg-gray-800 rounded-xl hover:bg-red-600 transition"><LogOut size={16} /></button>
         </div>
 
         <div className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 flex items-center justify-between shadow-sm">
@@ -631,16 +602,16 @@ export default function App() {
             </div>
             <div className="min-w-0 font-bold">
               <p className="text-xs truncate">{user?.displayName || "User"}</p>
-              <p className="text-[9px] text-green-500 uppercase truncate tracking-widest">Connected</p>
+              <p className="text-[9px] text-green-500 uppercase tracking-widest font-sans font-medium">Connected</p>
             </div>
           </div>
         </div>
         
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-3 uppercase tracking-widest font-bold"><Settings size={14} /> YouTube API</h2>
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-3 uppercase tracking-widest font-bold font-sans"><Settings size={14} /> YouTube API</h2>
           {!isApiKeySaved ? (
             <div className="space-y-2">
-              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="API Key" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none font-bold" />
+              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="API Key" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none" />
               <button onClick={() => { setDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'settings', 'youtube'), { key: apiKey }); setIsApiKeySaved(true); }} className="w-full bg-green-600 py-2 rounded-xl text-xs font-bold active:scale-95 transition">키 저장</button>
             </div>
           ) : (
@@ -652,12 +623,23 @@ export default function App() {
         </section>
 
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Video size={14} className="font-bold" /> 필터 검색 (동영상)</h2>
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Video size={14} /> 필터 검색 (동영상)</h2>
           <div className="space-y-4 font-bold">
             <input value={keywordFilter.keyword} onChange={(e) => setKeywordFilter({...keywordFilter, keyword: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && handleSearch('keyword')} placeholder="검색 키워드" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none font-bold" />
-            <div className="space-y-1 font-bold">
-              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans font-bold"><Globe size={10}/> 국가/언어 선택</label>
-              <select value={keywordFilter.region} onChange={(e) => setKeywordFilter({...keywordFilter, region: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold">
+            
+            <div className="space-y-1 font-bold font-sans">
+              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans font-medium"><Clock3 size={10}/> 영상 길이 구분</label>
+              <select value={keywordFilter.duration} onChange={(e) => setKeywordFilter({...keywordFilter, duration: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
+                <option value="any">전체 (모든 길이)</option>
+                <option value="short">숏폼/단편 (4분 미만)</option>
+                <option value="medium">일반 영상 (4분~20분)</option>
+                <option value="long">롱폼 영상 (20분 이상)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1 font-bold font-sans">
+              <label className="text-[10px] text-gray-500 font-bold flex items-center gap-1 font-sans font-medium"><Globe size={10}/> 국가/언어 선택</label>
+              <select value={keywordFilter.region} onChange={(e) => setKeywordFilter({...keywordFilter, region: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
                 <option value="KR|ko">🇰🇷 대한민국 (한국어)</option>
                 <option value="US|en">🇺🇸 미국 (영어)</option>
                 <option value="JP|ja">🇯🇵 일본 (일본어)</option>
@@ -665,9 +647,10 @@ export default function App() {
                 <option value="|">🌍 글로벌 (전체)</option>
               </select>
             </div>
-            <div className="space-y-1 font-bold">
-              <label className="text-[10px] text-gray-500 font-bold">기간 설정</label>
-              <select value={keywordFilter.period} onChange={(e) => setKeywordFilter({...keywordFilter, period: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer">
+
+            <div className="space-y-1 font-bold font-sans">
+              <label className="text-[10px] text-gray-500 font-bold font-medium">기간 설정</label>
+              <select value={keywordFilter.period} onChange={(e) => setKeywordFilter({...keywordFilter, period: e.target.value})} className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none cursor-pointer font-bold font-sans">
                 <option value="7">최근 7일</option>
                 <option value="30">최근 30일</option>
                 <option value="365">최근 1년</option>
@@ -680,7 +663,7 @@ export default function App() {
                   <select value={keywordFilter.customYear} onChange={(e)=>setKeywordFilter({...keywordFilter, customYear: e.target.value})} className="bg-black border border-gray-800 p-1 text-[10px] rounded-lg">
                       {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}년</option>)}
                   </select>
-                  <select value={keywordFilter.customMonth} onChange={(e)=>setKeywordFilter({...keywordFilter, customMonth: e.target.value})} className="bg-black border border-gray-800 p-1 text-[10px] rounded-lg font-bold">
+                  <select value={keywordFilter.customMonth} onChange={(e)=>setKeywordFilter({...keywordFilter, customMonth: e.target.value})} className="bg-black border border-gray-800 p-1 text-[10px] rounded-lg">
                       {Array.from({length:12}, (_,i)=>(i+1).toString().padStart(2,'0')).map(m => <option key={m} value={m}>{m}월</option>)}
                   </select>
                   <input value={keywordFilter.customDay} onChange={(e)=>setKeywordFilter({...keywordFilter, customDay: e.target.value})} className="bg-black border border-gray-800 p-1 text-[10px] rounded-lg font-bold" placeholder="1일"/>
@@ -692,24 +675,24 @@ export default function App() {
             </button>
             
             {isAdvancedOpen && (
-              <div className="space-y-3 p-3 bg-black/30 rounded-xl border border-white/5 font-bold font-sans font-bold">
+              <div className="space-y-3 p-3 bg-black/30 rounded-xl border border-white/5 font-bold font-sans">
                   <div className="grid grid-cols-2 gap-2 text-left">
-                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold">최소 조회수</p><input value={keywordFilter.minViews} onChange={(e)=>setKeywordFilter({...keywordFilter, minViews: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs font-bold" placeholder="0"/></div>
-                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold">최소 구독자</p><input value={keywordFilter.minSubs} onChange={(e)=>setKeywordFilter({...keywordFilter, minSubs: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs font-bold" placeholder="0"/></div>
+                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">최소 조회수</p><input value={keywordFilter.minViews} onChange={(e)=>setKeywordFilter({...keywordFilter, minViews: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
+                      <div className="space-y-1"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">최소 구독자</p><input value={keywordFilter.minSubs} onChange={(e)=>setKeywordFilter({...keywordFilter, minSubs: e.target.value})} className="w-full bg-black border border-gray-800 rounded-lg p-2 text-xs" placeholder="0"/></div>
                   </div>
-                  <div className="space-y-1 text-left font-sans font-bold"><p className="text-[9px] text-gray-500 uppercase font-bold">결과 개수</p><select value={keywordFilter.maxResults} onChange={(e)=>setKeywordFilter({...keywordFilter, maxResults: e.target.value})} className="bg-black border border-gray-800 w-full p-2 rounded-lg text-xs font-bold"><option value="10">10개</option><option value="25">25개</option><option value="50">50개</option></select></div>
+                  <div className="space-y-1 text-left"><p className="text-[9px] text-gray-500 uppercase font-bold font-medium">결과 개수</p><select value={keywordFilter.maxResults} onChange={(e)=>setKeywordFilter({...keywordFilter, maxResults: e.target.value})} className="bg-black border border-gray-800 w-full p-2 rounded-lg text-xs"><option value="10">10개</option><option value="25">25개</option><option value="50">50개</option></select></div>
               </div>
             )}
 
-            <button onClick={() => handleSearch('keyword')} disabled={isLoading} className="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold uppercase transition hover:bg-blue-700 active:scale-95 font-sans font-bold">동영상 검색</button>
+            <button onClick={() => handleSearch('keyword')} disabled={isLoading} className="w-full bg-blue-600 py-3 rounded-xl text-xs font-bold uppercase transition hover:bg-blue-700 active:scale-95 font-sans">동영상 검색</button>
           </div>
         </section>
 
         <section className="bg-[#1e1e1e] rounded-2xl p-4 border border-gray-800 text-left font-bold font-sans">
-          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold font-sans font-bold"><Users size={14} className="font-bold" /> 채널 직통 검색</h2>
-          <div className="space-y-3 font-bold font-sans font-bold">
+          <h2 className="text-xs text-gray-400 flex items-center gap-2 mb-4 uppercase tracking-widest font-bold"><Users size={14} /> 채널 직통 검색</h2>
+          <div className="space-y-3 font-bold">
             <input value={directQuery} onChange={(e) => setDirectQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch('direct')} placeholder="채널명, @핸들, URL" className="w-full bg-black border border-gray-800 rounded-xl p-2 text-xs outline-none font-bold" />
-            <button onClick={() => handleSearch('direct')} disabled={isLoading} className="w-full bg-red-600 py-2.5 rounded-xl text-[11px] font-bold uppercase active:scale-95 transition font-bold font-sans">채널 검색</button>
+            <button onClick={() => handleSearch('direct')} disabled={isLoading} className="w-full bg-red-600 py-2.5 rounded-xl text-[11px] font-bold uppercase active:scale-95 transition font-sans">채널 검색</button>
           </div>
         </section>
       </aside>
@@ -720,27 +703,27 @@ export default function App() {
         </header>
 
         <nav className="px-8 mt-6 text-left shrink-0 font-bold font-sans">
-          <div className="flex gap-4 border-b border-gray-800 uppercase text-xs tracking-widest font-bold font-sans font-bold">
-            <button onClick={() => setViewMode('search_video')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_video' ? 'text-blue-500 border-b-2 border-blue-500 font-bold' : 'text-gray-500 hover:text-white font-sans'}`}>필터검색 <span className="bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded-full text-[9px] font-bold font-sans">{videoResults.length}</span></button>
-            <button onClick={() => setViewMode('search_channel')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_channel' ? 'text-red-500 border-b-2 border-red-500 font-bold' : 'text-gray-500 hover:text-white font-sans'}`}>채널검색 <span className="bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded-full text-[9px] font-bold font-sans">{channelResults.length}</span></button>
-            <button onClick={() => setViewMode('saved')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'saved' ? 'text-green-500 border-b-2 border-green-500 font-bold' : 'text-gray-500 hover:text-white font-sans'}`}>저장목록 <span className="bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[9px] font-bold font-sans">{savedChannels.length}</span></button>
+          <div className="flex gap-4 border-b border-gray-800 uppercase text-xs tracking-widest font-bold font-sans">
+            <button onClick={() => setViewMode('search_video')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_video' ? 'text-blue-500 border-b-2 border-blue-500 font-bold' : 'text-gray-500 hover:text-white'}`}>필터검색 <span className="bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{videoResults.length}</span></button>
+            <button onClick={() => setViewMode('search_channel')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'search_channel' ? 'text-red-500 border-b-2 border-red-500 font-bold' : 'text-gray-500 hover:text-white'}`}>채널검색 <span className="bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{channelResults.length}</span></button>
+            <button onClick={() => setViewMode('saved')} className={`pb-3 px-4 flex items-center gap-2 transition ${viewMode === 'saved' ? 'text-green-500 border-b-2 border-green-500 font-bold' : 'text-gray-500 hover:text-white'}`}>저장목록 <span className="bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded-full text-[9px] font-sans font-medium">{savedChannels.length}</span></button>
           </div>
         </nav>
         
         <div className="px-8 mt-4 flex items-center justify-between shrink-0 font-bold font-sans">
           {viewMode === 'saved' ? (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-sans font-bold">
-              <button onClick={() => setActiveTab('전체')} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border ${activeTab === '전체' ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-sans'}`}>전체</button>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans">
+              <button onClick={() => setActiveTab('전체')} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border ${activeTab === '전체' ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>전체</button>
               {categories.map(cat => (
-                <button key={cat.id} onClick={() => setActiveTab(cat.name)} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border flex items-center gap-2 ${activeTab === cat.name ? 'bg-orange-600 text-white border-orange-600 shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-sans'}`}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400 font-bold"></div>{cat.name}
+                <button key={cat.id} onClick={() => setActiveTab(cat.name)} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition border flex items-center gap-2 ${activeTab === cat.name ? 'bg-orange-600 text-white border-orange-600 shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>{cat.name}
                 </button>
               ))}
-              <button onClick={() => setIsModalOpen(true)} className="p-1.5 text-gray-500 hover:text-white font-bold"><FolderEdit size={16} /></button>
+              <button onClick={() => setIsModalOpen(true)} className="p-1.5 text-gray-500 hover:text-white" title="카테고리 수정"><FolderEdit size={16} /></button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans font-bold">
-              <span className="text-[10px] text-gray-500 uppercase mr-2 font-bold font-sans">Sort by:</span>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 font-bold font-sans">
+              <span className="text-[10px] text-gray-500 uppercase mr-2 font-medium">Sort by:</span>
               {[
                 { label: "조회수 순", key: "views" }, 
                 { label: "효율 순", key: "efficiency" }, 
@@ -748,7 +731,7 @@ export default function App() {
                 { label: "최신 순", key: "latest" },
                 { label: "빈도 순", key: "frequency" }
               ].map(s => (
-                <button key={s.key} onClick={() => setSortKey(s.key)} className={`px-4 py-1.5 rounded-full text-[11px] border transition font-bold font-sans ${sortKey === s.key ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-bold'}`}>{s.label}</button>
+                <button key={s.key} onClick={() => setSortKey(s.key)} className={`px-4 py-1.5 rounded-full text-[11px] border transition font-bold ${sortKey === s.key ? 'bg-white text-black border-white shadow-lg font-bold' : 'border-gray-800 text-gray-400 hover:text-white font-medium'}`}>{s.label}</button>
               ))}
             </div>
           )}
@@ -757,24 +740,24 @@ export default function App() {
         <div className="px-8 py-8 flex-1 overflow-y-auto no-scrollbar font-sans font-bold">
           {isLoading ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-500 font-bold font-sans">
-              <Loader2 size={48} className="animate-spin text-red-600 mb-4 opacity-50 font-bold font-bold font-bold" />
-              <p className="font-bold uppercase tracking-widest font-sans font-bold">데이터 분석 중...</p>
+              <Loader2 size={48} className="animate-spin text-red-600 mb-4 opacity-50" />
+              <p className="font-bold uppercase tracking-widest font-sans">데이터 분석 중...</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 font-bold font-sans">
               {viewMode === 'search_video' && (
                 sortedVideos.length > 0 ? sortedVideos.map(res => <ChannelCard key={res.videoId} result={res} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="video" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
-                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans">검색 결과가 없습니다.</div>
+                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">검색 결과가 없습니다.</div>
                 )
               )}
               {viewMode === 'search_channel' && (
                 sortedChannels.length > 0 ? sortedChannels.map(res => <ChannelCard key={res.channelId} result={res} onSave={(r, c, t) => addDoc(collection(services.db, 'artifacts', appId, 'users', user.uid, 'channels'), { ...r, category: c, type: t, timestamp: Date.now() })} onAnalyze={setAnalysisChannel} isSavedView={false} categories={categories} mode="channel" onUpdateCategory={()=>{}} onUpdateMemo={()=>{}} />) : (
-                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans">채널 결과가 없습니다.</div>
+                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">채널 결과가 없습니다.</div>
                 )
               )}
               {viewMode === 'saved' && (
                 filteredSaved.length > 0 ? filteredSaved.map(ch => <ChannelCard key={ch.id} result={ch} onRemove={(id) => deleteDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id))} onUpdateCategory={(id, c) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { category: c })} onUpdateMemo={(id, m) => updateDoc(doc(services.db, 'artifacts', appId, 'users', user.uid, 'channels', id), { memo: m })} onAnalyze={setAnalysisChannel} isSavedView={true} categories={categories} mode={ch.type} />) : (
-                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans">저장된 채널이 없습니다.</div>
+                  <div className="col-span-full h-64 flex flex-col items-center justify-center text-gray-500 border border-dashed border-gray-800 rounded-3xl font-bold font-sans font-medium">저장된 채널이 없습니다.</div>
                 )
               )}
             </div>
